@@ -54,7 +54,7 @@ resource "azurerm_virtual_network" "example-vnet" {
   name                = "example-vnet"
   address_space       = ["10.0.0.0/16"]
   location              = "East US"
-  resource_group_name   = azurepipelinesrg
+  resource_group_name   = "azurepipelinesrg"
 
   tags = {
     Environment = "dev"
@@ -64,7 +64,7 @@ resource "azurerm_virtual_network" "example-vnet" {
 
 resource "azurerm_subnet" "example-subnet1" {
   name                 = "example-subnet"
-  resource_group_name   = azurepipelinesrg
+  resource_group_name   = "azurepipelinesrg"
   virtual_network_name = azurerm_virtual_network.example-vnet.name
   address_prefixes     = ["10.0.1.0/24"]
 
@@ -75,7 +75,7 @@ resource "azurerm_subnet" "example-subnet1" {
 resource "azurerm_public_ip" "main" {
   name                = "myPublicIP"
   location              = "East US"
-  resource_group_name   = azurepipelinesrg
+  resource_group_name   = "azurepipelinesrg"
   allocation_method   = "Dynamic"
 
   tags = {
@@ -86,7 +86,7 @@ resource "azurerm_public_ip" "main" {
 resource "azurerm_network_interface" "main" {
   name                = "myNIC"
   location              = "East US"
-  resource_group_name   = azurepipelinesrg
+  resource_group_name   = "azurepipelinesrg"
 
   ip_configuration {
     name                          = "internal"
@@ -106,7 +106,7 @@ resource "azurerm_network_interface" "main" {
 resource "azurerm_virtual_machine" "vm1" {
   name                  = "vm1"
   location              = "East US"
-  resource_group_name   = azurepipelinesrg
+  resource_group_name   = "azurepipelinesrg"
   network_interface_ids = [azurerm_network_interface.main.id]
   vm_size               = "Standard_B1s"
   delete_os_disk_on_termination = true
