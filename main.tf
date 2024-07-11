@@ -53,7 +53,7 @@ provider "azurerm" {
 resource "azurerm_virtual_network" "example-vnet" {
   name                = "example-vnet"
   address_space       = ["10.0.0.0/16"]
-  location              = "East US"
+  location              = "West US"
   resource_group_name   = "azurepipelinesrg"
 
   tags = {
@@ -74,7 +74,7 @@ resource "azurerm_subnet" "example-subnet1" {
 # Create a public IP for the VM
 resource "azurerm_public_ip" "main" {
   name                = "myPublicIP"
-  location              = "East US"
+  location              = "West US"
   resource_group_name   = "azurepipelinesrg"
   allocation_method   = "Dynamic"
 
@@ -85,7 +85,7 @@ resource "azurerm_public_ip" "main" {
 
 resource "azurerm_network_interface" "main" {
   name                = "myNIC"
-  location              = "East US"
+  location              = "West US"
   resource_group_name   = "azurepipelinesrg"
 
   ip_configuration {
@@ -105,7 +105,7 @@ resource "azurerm_network_interface" "main" {
 # Create a VM
 resource "azurerm_virtual_machine" "vm1" {
   name                  = "vm1"
-  location              = "East US"
+  location              = "West US"
   resource_group_name   = "azurepipelinesrg"
   network_interface_ids = [azurerm_network_interface.main.id]
   vm_size               = "Standard_B1s"
