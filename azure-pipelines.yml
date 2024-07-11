@@ -51,18 +51,12 @@ stages:
             inputs:
               provider: 'azurerm'
               command: 'init'
+              backendServiceAWS: 'AWS-Service-Connection'
               backendServiceArm: 'AzurePipelineServiceConnection'
               backendAzureRmResourceGroupName: 'azurepipelinesrg'
               backendAzureRmStorageAccountName: 'maumvmodulestorageacct'
               backendAzureRmContainerName: 'maumvterraformstate'
               backendAzureRmKey: 'terraform.tfstate'
-          - task: TerraformTaskV4@4
-            inputs:
-              provider: 'aws'
-              command: 'init'
-              backendServiceAWS: 'AWS-Service-Connection'
-              backendAWSBucketName: 'maumv-terraform-state-bucket'
-              backendAWSKey: 'terraform.state'
           - task: TerraformTaskV4@4
             displayName: plan
             inputs:
