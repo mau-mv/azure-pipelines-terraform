@@ -62,7 +62,7 @@ resource "azurerm_virtual_network" "example-vnet" {
 }
 
 
-resource "azurerm_subnet" "example-subnet1" {
+resource "azurerm_subnet" "example-subnet" {
   name                 = "example-subnet"
   resource_group_name   = "azurepipelinesrg"
   virtual_network_name = azurerm_virtual_network.example-vnet.name
@@ -90,7 +90,7 @@ resource "azurerm_network_interface" "main" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.example-subnet1.id
+    subnet_id                     = azurerm_subnet.example-subnet.id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.main.id
   }
@@ -99,7 +99,7 @@ resource "azurerm_network_interface" "main" {
     Environment = "dev"
   }
 
-  depends_on = [azurerm_subnet.example-subnet1]
+  depends_on = [azurerm_subnet.example-subnet]
 }
 
 # Create a VM
