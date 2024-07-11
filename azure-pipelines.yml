@@ -60,14 +60,14 @@ stages:
           - task: TerraformTaskV4@4
             displayName: plan
             inputs:
-              provider: 'azurerm'
+              provider: 'aws'
               command: 'plan'
               environmentServiceNameAzureRM: 'AzurePipelineServiceConnection'
               environmentServiceNameAWS: 'AWS-Service-Connection'
           - task: TerraformTaskV4@4
             displayName: apply
             inputs:
-              provider: 'azurerm'
+              provider: 'aws'
               command: 'apply'
               environmentServiceNameAzureRM: 'AzurePipelineServiceConnection'
               environmentServiceNameAWS: 'AWS-Service-Connection'
