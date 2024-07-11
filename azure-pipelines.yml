@@ -58,26 +58,16 @@ stages:
               backendAzureRmContainerName: 'maumvterraformstate'
               backendAzureRmKey: 'terraform.tfstate'
           - task: TerraformTaskV4@4
-            displayName: plan azure
+            displayName: plan
             inputs:
               provider: 'azurerm'
               command: 'plan'
               environmentServiceNameAzureRM: 'AzurePipelineServiceConnection'
-          - task: TerraformTaskV4@4
-            displayName: plan aws
-            inputs:
-              provider: 'aws'
-              command: 'plan'
               environmentServiceNameAWS: 'AWS-Service-Connection'
           - task: TerraformTaskV4@4
-            displayName: apply azure
+            displayName: apply
             inputs:
               provider: 'azurerm'
               command: 'apply'
               environmentServiceNameAzureRM: 'AzurePipelineServiceConnection'
-          - task: TerraformTaskV4@4
-            displayName: apply aws
-            inputs:
-              provider: 'aws'
-              command: 'apply'
               environmentServiceNameAWS: 'AWS-Service-Connection'
