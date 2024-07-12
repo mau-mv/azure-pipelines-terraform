@@ -9,65 +9,67 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
+variables:
+  TF_VERSION: 'latest'
+
 stages:
-  - stage: tfvalidate
+  - stage: setup
     jobs:
-      - job: validate
+      - job: 
         continueOnError: false
         steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.x'
+              addToPath: true
+          - script: |
+              python -m pip install --upgrade pip
+              pip install awscli
+          - script: |
+              aws_access_key_id=$(az keyvault secret show --vault-name azpipelinevault --name "AWSAccessKeyId" --query "value" -o tsv)
+              aws_secret_access_key=$(az keyvault secret show --vault-name azpipelinevault --name "AWSSecretAccessKey" --query "value" -o tsv)
+              aws configure set aws_access_key_id $aws_access_key_id
+              aws configure set aws_secret_access_key $aws_secret_access_key
           - task: TerraformInstaller@1
             displayName: Install Terraform
             inputs:
               terraformVersion: 'latest'
-          - task: TerraformTaskV4@4
-            displayName: init
+          - task: DownloadSecureFile@1
+            name: azServicePrincipal
             inputs:
-              provider: 'azurerm'
-              command: 'init'
-              backendServiceAWS: 'AWS-Service-Connection'
-              backendServiceArm: 'AzurePipelineServiceConnection'
-              backendAzureRmResourceGroupName: 'azurepipelinesrg'
-              backendAzureRmStorageAccountName: 'maumvmodulestorageacct'
-              backendAzureRmContainerName: 'maumvterraformstate'
-              backendAzureRmKey: 'terraform.tfstate'
-          - task: TerraformTaskV4@4
-            displayName: validate
+              secureFile: 'azure-sp.json'  # Replace with the name of your service principal file
+          - task: AzureCLI@2
             inputs:
-              provider: 'azurerm'
-              command: 'validate'
-  - stage: tfdeploy
-    condition: succeeded('tfvalidate')
-    dependsOn: tfvalidate
-    jobs:
-      - job: validate
-        continueOnError: false
-        steps:
-          - task: TerraformInstaller@1
-            displayName: Install Terraform
+              azureSubscription: AzurePipelineServiceConnection  # Replace with your Azure subscription
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az login --service-principal -u $(azServicePrincipal) -p $(azServicePrincipal) --tenant $(tenantID)
+          
+          - script: |
+              terraform init
+            displayName: 'Terraform init'
+
+          - script: |
+              terraform validate
+            displayName: 'Terraform validate'
+
+          - script: |
+              terraform plan -out=tfplan
+            displayName: 'Terraform plan'
+
+          - script: |
+              terraform apply -auto-approve tfplan
+            displayName: 'Terraform apply'
+
+          - task: AzureKeyVault@2
             inputs:
-              terraformVersion: 'latest'
-          - task: TerraformTaskV4@4
-            displayName: init
-            inputs:
-              provider: 'azurerm'
-              command: 'init'
-              backendServiceAWS: 'AWS-Service-Connection'
-              backendServiceArm: 'AzurePipelineServiceConnection'
-              backendAzureRmResourceGroupName: 'azurepipelinesrg'
-              backendAzureRmStorageAccountName: 'maumvmodulestorageacct'
-              backendAzureRmContainerName: 'maumvterraformstate'
-              backendAzureRmKey: 'terraform.tfstate'
-          - task: TerraformTaskV4@4
-            displayName: plan
-            inputs:
-              provider: 'aws'
-              command: 'plan'
-              environmentServiceNameAzureRM: 'AzurePipelineServiceConnection'
-              environmentServiceNameAWS: 'AWS-Service-Connection'
-          - task: TerraformTaskV4@4
-            displayName: apply
-            inputs:
-              provider: 'aws'
-              command: 'apply'
-              environmentServiceNameAzureRM: 'AzurePipelineServiceConnection'
-              environmentServiceNameAWS: 'AWS-Service-Connection'
+              azureSubscription: AzurePipelineServiceConnection # Replace with your Azure subscription
+              KeyVaultName: 'azpipelinevault'  # Replace with your Key Vault name
+              SecretsFilter: '*'
+              RunAsPreJob: true
+
+          - script: |
+              # Verify resources creation
+              terraform output
+            displayName: 'Verify Terraform outputs'
