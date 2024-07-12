@@ -29,13 +29,15 @@ stages:
             name: azServicePrincipal
             inputs:
               secureFile: 'azure-sp.json'  # Replace with the name of your service principal file
-          - task: AzureCLI@2
-            inputs:
-              azureSubscription: AzurePipelineServiceConnection  # Replace with your Azure subscription
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                az login --service-principal -u $(azServicePrincipal) -p $(azServicePrincipal) --tenant $(tenantID)
+          - script: |
+              # Fetch secrets from Azure Key Vault
+              client_id=$(az keyvault secret show --vault-name <your-keyvault-name> --name "ServicePrincipalClientId" --query "value" -o tsv)
+              client_secret=$(az keyvault secret show --vault-name <your-keyvault-name> --name "ServicePrincipalClientSecret" --query "value" -o tsv)
+              tenant_id=$(az keyvault secret show --vault-name <your-keyvault-name> --name "ServicePrincipalTenantId" --query "value" -o tsv)
+
+              # Use secrets in your commands (e.g., login to Azure)
+              az login --service-principal -u $client_id -p $client_secret --tenant $tenant_id
+            displayName: 'Login to Azure with Service Principal'
           
           - script: |
               aws_access_key_id=$(az keyvault secret show --vault-name azpipelinevault --name "AWSAccessKeyId" --query "value" -o tsv)
