@@ -17,6 +17,7 @@ stages:
             inputs:
               versionSpec: '3.x'
               addToPath: true
+
           - script: |
               python -m pip install --upgrade pip
               pip install awscli jq
@@ -62,31 +63,25 @@ stages:
                 az account set --subscription $(subscriptionId)
                 echo "Azure subscription set to $(subscriptionId)."
             displayName: 'Login to Azure with Service Principal'
-          - script: |
-              echo "Service Principal Object ID: $(az ad sp show --id $(clientId) --query 'objectId' -o tsv)"
-            displayName: 'Verify Service Principal Object ID'
-          - task: AzureKeyVault@2
-            inputs:
-              azureSubscription: 'AzurePipelineServiceConnection'  # Replace with your Azure subscription
-              KeyVaultName: 'azpipelinevault'  # Replace with your Key Vault name
-              SecretsFilter: '*'
-              RunAsPreJob: true
 
           - script: |
               echo "Fetching AWS credentials from Azure Key Vault..."
               aws_access_key_id=$(az keyvault secret show --vault-name azpipelinevault --name "AWSAccessKeyId" --query "value" -o tsv)
               aws_secret_access_key=$(az keyvault secret show --vault-name azpipelinevault --name "AWSSecretAccessKey" --query "value" -o tsv)
 
+              echo "AWS Access Key ID: $aws_access_key_id"
+              echo "AWS Secret Access Key: $aws_secret_access_key"
+
               if [ -z "$aws_access_key_id" ]; then
                 echo "AWS Access Key ID is empty"
               else
-                echo "AWS Access Key ID: $aws_access_key_id"
+                echo "AWS Access Key ID fetched successfully"
               fi
 
               if [ -z "$aws_secret_access_key" ]; then
                 echo "AWS Secret Access Key is empty"
               else
-                echo "AWS Secret Access Key: [REDACTED]"
+                echo "AWS Secret Access Key fetched successfully"
               fi
 
               echo "##vso[task.setvariable variable=AWS_ACCESS_KEY_ID]$aws_access_key_id"
@@ -99,7 +94,19 @@ stages:
               aws configure set aws_access_key_id $aws_access_key_id
               aws configure set aws_secret_access_key $aws_secret_access_key
               aws sts get-caller-identity
-            displayName: 'Configure and Verify AWS CLI'
+            displayName: 'Fetch, Log, and Configure AWS CLI'
+
+          - script: |
+                set -e
+                az login --service-principal -u $(clientId) -p $(clientSecret) --tenant $(tenantId)
+                sp_object_id=$(az ad sp show --id $(clientId) --query 'objectId' -o tsv)
+                echo "Service Principal Object ID: $sp_object_id"
+                if [ -z "$sp_object_id" ]; then
+                  echo "Service Principal Object ID is empty"
+                else
+                  echo "Service Principal Object ID fetched successfully"
+                fi
+                echo "##vso[task.setvariable variable=spObjectId]$sp_object_id"
 
           - task: TerraformInstaller@1
             displayName: Install Terraform
