@@ -64,7 +64,8 @@ stages:
               aws_secret_access_key=$(az keyvault secret show --vault-name azpipelinevault --name "AWSSecretAccessKey" --query "value" -o tsv)
               aws configure set aws_access_key_id $aws_access_key_id
               aws configure set aws_secret_access_key $aws_secret_access_key
-            displayName: 'Configure AWS CLI'
+              aws sts get-caller-identity
+            displayName: 'Configure and Verify AWS CLI'
 
           - task: TerraformInstaller@1
             displayName: Install Terraform
