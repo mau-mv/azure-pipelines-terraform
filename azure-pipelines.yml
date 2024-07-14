@@ -43,13 +43,24 @@ stages:
               echo "##vso[task.setvariable variable=tenantId]$tenantId"
             displayName: 'Parse JSON and Set Variables'
 
+          - script: |
+              echo "ClientId: $(clientId)"
+              echo "TenantId: $(tenantId)"
+              echo "SubscriptionId: $(subscriptionId)"
+            displayName: 'Echo Service Principal Variables for Debugging'
+
           - task: AzureCLI@2
             inputs:
               azureSubscription: 'AzurePipelineServiceConnection'  # Replace with your Azure service connection
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
+                set -e
+                echo "Logging into Azure CLI..."
                 az login --service-principal -u $(clientId) -p $(clientSecret) --tenant $(tenantId)
+                echo "Logged into Azure CLI."
+                az account set --subscription $(subscriptionId)
+                echo "Azure subscription set to $(subscriptionId)."
             displayName: 'Login to Azure with Service Principal'
 
           - task: AzureKeyVault@2
@@ -60,8 +71,12 @@ stages:
               RunAsPreJob: true
 
           - script: |
+              echo "Fetching AWS credentials from Azure Key Vault..."
               aws_access_key_id=$(az keyvault secret show --vault-name azpipelinevault --name "AWSAccessKeyId" --query "value" -o tsv)
               aws_secret_access_key=$(az keyvault secret show --vault-name azpipelinevault --name "AWSSecretAccessKey" --query "value" -o tsv)
+              
+              echo "AWS Access Key ID: $aws_access_key_id"
+              echo "AWS Secret Access Key: [REDACTED]"
               
               echo "##vso[task.setvariable variable=AWS_ACCESS_KEY_ID]$aws_access_key_id"
               echo "##vso[task.setvariable variable=AWS_SECRET_ACCESS_KEY]$aws_secret_access_key"
@@ -69,6 +84,9 @@ stages:
               export AWS_ACCESS_KEY_ID=$aws_access_key_id
               export AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
               
+              echo "Configuring AWS CLI..."
+              aws configure set aws_access_key_id $aws_access_key_id
+              aws configure set aws_secret_access_key $aws_secret_access_key
               aws sts get-caller-identity
             displayName: 'Configure and Verify AWS CLI'
 
