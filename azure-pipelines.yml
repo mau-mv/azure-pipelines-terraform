@@ -62,7 +62,9 @@ stages:
                 az account set --subscription $(subscriptionId)
                 echo "Azure subscription set to $(subscriptionId)."
             displayName: 'Login to Azure with Service Principal'
-
+          - script: |
+              echo "Service Principal Object ID: $(az ad sp show --id $(clientId) --query 'objectId' -o tsv)"
+            displayName: 'Verify Service Principal Object ID'
           - task: AzureKeyVault@2
             inputs:
               azureSubscription: 'AzurePipelineServiceConnection'  # Replace with your Azure subscription
