@@ -1,5 +1,6 @@
 terraform {
   backend "azurerm" {
+    use_oidc = true
     resource_group_name = "azurepipelinesrg"
     storage_account_name = "maumvmodulestorageacct"
     container_name         = "maumvterraformstate"
@@ -46,6 +47,7 @@ resource "aws_instance" "my_instance" {
 # AZURE INFRA ------------------------------------------------------------------
 
 provider "azurerm" {
+  use_oidc = true
   skip_provider_registration = true
   features {}
 }
