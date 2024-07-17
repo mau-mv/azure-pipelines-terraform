@@ -40,13 +40,6 @@ stages:
               export ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)
               export ARM_TENANT_ID=$(ARM_TENANT_ID)
               az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
-              sp_object_id=$(az ad sp show --id $ARM_CLIENT_ID --query 'objectId' -o tsv)
-              if [ -z "$sp_object_id" ]; then
-                echo "Service Principal Object ID is empty"
-                exit 1
-              else
-                echo "Service Principal Object ID fetched successfully"
-              fi
             displayName: 'Azure Login and Service Principal ID Fetch'
 
           - script: |
