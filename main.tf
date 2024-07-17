@@ -55,9 +55,6 @@ resource "aws_instance" "my_instance" {
 provider "azurerm" {
   skip_provider_registration = true
   features {}
-  client_id       = "6c5ba47e-5b54-4061-a18e-237d7e154d43"
-  tenant_id       = "a3439f07-fb51-4872-bf57-69ec8a73d1b7"
-  subscription_id = "3b69d161-00c7-4354-98eb-ebe3e520ef63"
 }
 
 resource "azurerm_virtual_network" "example-vnet" {
