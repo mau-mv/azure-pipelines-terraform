@@ -1,19 +1,3 @@
-terraform {
-  backend "azurerm" {
-    use_oidc = true
-    resource_group_name = "azurepipelinesrg"
-    storage_account_name = "maumvmodulestorageacct"
-    container_name         = "maumvterraformstate"
-    key            = "terraform.tfstate"
-  }
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "=3.7.0"
-    }
-  }
-}
-
 provider "aws" {
   region = "us-west-2"
 }
