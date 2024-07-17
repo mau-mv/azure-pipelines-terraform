@@ -22,15 +22,6 @@ stages:
               python -m pip install --upgrade pip
               pip install awscli jq
             displayName: 'Install pip, AWS CLI, and jq'    
-          - task: AzureCLI@2
-            displayName: Azure CLI
-            inputs:
-              azureSubscription: AzurePipelineServiceConnection
-              scriptType: 'bash'
-              scriptLocation: inlineScript
-              inlineScript: |
-                az --version
-                az account show
 
           - script: |
               set -e
@@ -40,7 +31,7 @@ stages:
               export ARM_SUBSCRIPTION_ID=$(ARM_SUBSCRIPTION_ID)
               export ARM_TENANT_ID=$(ARM_TENANT_ID)
               az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
-            displayName: 'Azure Login and Service Principal ID Fetch'
+            displayName: 'Azure Login'
 
           - script: |
               echo "Fetching AWS credentials from Azure Key Vault..."
