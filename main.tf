@@ -53,7 +53,6 @@ resource "aws_instance" "my_instance" {
 # AZURE INFRA ------------------------------------------------------------------
 
 provider "azurerm" {
-  use_oidc = true
   skip_provider_registration = true
   features {}
   client_id       = "6c5ba47e-5b54-4061-a18e-237d7e154d43"
