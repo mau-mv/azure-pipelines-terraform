@@ -26,7 +26,7 @@ stages:
             displayName: Azure CLI
             inputs:
               azureSubscription: AzurePipelineServiceConnection
-              scriptType: ps
+              scriptType: 'bash'
               scriptLocation: inlineScript
               inlineScript: |
                 az --version
