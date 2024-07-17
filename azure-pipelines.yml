@@ -60,6 +60,7 @@ stages:
               aws configure set aws_access_key_id $aws_access_key_id
               aws configure set aws_secret_access_key $aws_secret_access_key
               aws sts get-caller-identity
+              az logout
             displayName: 'Fetch, Log, and Configure AWS CLI'
 
           - task: TerraformInstaller@1
