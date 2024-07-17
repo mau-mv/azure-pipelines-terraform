@@ -21,48 +21,16 @@ stages:
           - script: |
               python -m pip install --upgrade pip
               pip install awscli jq
-            displayName: 'Install pip, AWS CLI, and jq'
-
-          - task: DownloadSecureFile@1
-            name: azServicePrincipal
-            inputs:
-              secureFile: 'azure-sp.json'  # Replace with the name of your service principal file
-
-          - script: |
-              # Read and parse JSON file
-              configFileContents=$(cat $(azServicePrincipal.secureFilePath))
-
-              # Extract specific values
-              clientId=$(echo $configFileContents | jq -r '.clientId')
-              clientSecret=$(echo $configFileContents | jq -r '.clientSecret')
-              subscriptionId=$(echo $configFileContents | jq -r '.subscriptionId')
-              tenantId=$(echo $configFileContents | jq -r '.tenantId')
-
-              echo "##vso[task.setvariable variable=clientId]$clientId"
-              echo "##vso[task.setvariable variable=clientSecret]$clientSecret"
-              echo "##vso[task.setvariable variable=subscriptionId]$subscriptionId"
-              echo "##vso[task.setvariable variable=tenantId]$tenantId"
-            displayName: 'Parse JSON and Set Variables'
-
-          - script: |
-              echo "ClientId: $(clientId)"
-              echo "TenantId: $(tenantId)"
-              echo "SubscriptionId: $(subscriptionId)"
-            displayName: 'Echo Service Principal Variables for Debugging'
-
+            displayName: 'Install pip, AWS CLI, and jq'    
           - task: AzureCLI@2
+            displayName: Azure CLI
             inputs:
-              azureSubscription: 'AzurePipelineServiceConnection'  # Replace with your Azure service connection
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
+              azureSubscription: AzurePipelineServiceConnection
+              scriptType: ps
+              scriptLocation: inlineScript
               inlineScript: |
-                set -e
-                echo "Logging into Azure CLI..."
-                az login --service-principal -u $(clientId) -p $(clientSecret) --tenant $(tenantId)
-                echo "Logged into Azure CLI."
-                az account set --subscription $(subscriptionId)
-                echo "Azure subscription set to $(subscriptionId)."
-            displayName: 'Login to Azure with Service Principal'
+                az --version
+                az account show
 
           - script: |
               echo "Fetching AWS credentials from Azure Key Vault..."
@@ -83,9 +51,6 @@ stages:
               else
                 echo "AWS Secret Access Key fetched successfully"
               fi
-
-              echo "##vso[task.setvariable variable=AWS_ACCESS_KEY_ID]$aws_access_key_id"
-              echo "##vso[task.setvariable variable=AWS_SECRET_ACCESS_KEY]$aws_secret_access_key"
 
               export AWS_ACCESS_KEY_ID=$aws_access_key_id
               export AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
