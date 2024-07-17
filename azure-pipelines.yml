@@ -71,18 +71,6 @@ stages:
               aws sts get-caller-identity
             displayName: 'Fetch, Log, and Configure AWS CLI'
 
-          - script: |
-                set -e
-                az login --service-principal -u $(clientId) -p $(clientSecret) --tenant $(tenantId)
-                sp_object_id=$(az ad sp show --id $(clientId) --query 'objectId' -o tsv)
-                echo "Service Principal Object ID: $sp_object_id"
-                if [ -z "$sp_object_id" ]; then
-                  echo "Service Principal Object ID is empty"
-                else
-                  echo "Service Principal Object ID fetched successfully"
-                fi
-                echo "##vso[task.setvariable variable=spObjectId]$sp_object_id"
-
           - task: TerraformInstaller@1
             displayName: Install Terraform
             inputs:
