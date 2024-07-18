@@ -55,24 +55,11 @@ stages:
               command: 'plan'
               commandOptions: '-out main.tfplan'
               environmentServiceNameAzureRM: 'WorkloadServiceConnection'
-
-          - script: |
-              terraform init
-            displayName: 'Terraform init'
-
-          - script: |
-              terraform validate
-            displayName: 'Terraform validate'
-
-          - script: |
-              terraform plan -out=tfplan
-            displayName: 'Terraform plan'
-
-          - script: |
-              terraform apply -auto-approve tfplan
-            displayName: 'Terraform apply'
-
-          - script: |
-              # Verify resources creation
-              terraform output
-            displayName: 'Verify Terraform outputs'
+          - task: TerraformTaskV4@4
+            displayName: Apply Terraform Plan
+            condition: eq(variables['terraformPlan.changesPresent'], 'true')
+            inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              commandOptions: 'main.tfplan'
+              environmentServiceNameAzureRM: 'WorkloadServiceConnection'
