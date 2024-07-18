@@ -32,33 +32,29 @@ stages:
               export AWS_SECRET_ACCESS_KEY=$(aws_secret_access_key)
             displayName: 'Set Azure authentication variables'
 
-          - script: |
-                set -e
-                echo "Fetching OIDC token..."
-                response=$(curl -s -X POST -H 'Metadata: true' --url 'http://169.254.169.254/metadata/identity/oauth2/token' --data 'api-version=2019-08-01&resource=https%3A%2F%2Fmanagement.azure.com%2F')
-                oidc_token=$(echo $response | jq -r .access_token)
-                
-                if [ -z "$oidc_token" ]; then
-                  echo "Failed to fetch OIDC token"
-                  exit 1
-                else
-                  echo "OIDC token fetched successfully"
-                fi
-                
-                # Export the token to be used in subsequent steps
-                export OIDC_TOKEN=$oidc_token
-                echo $OIDC_TOKEN
-            displayName: 'Fetch OIDC Token'
-
-          - script: |
-              echo "Using OIDC token to authenticate..."
-              az login --service-principal --username $ARM_CLIENT_ID --password $OIDC_TOKEN --tenant $ARM_TENANT_ID
-            displayName: 'Azure Login using OIDC Token'
-
           - task: TerraformInstaller@1
             displayName: 'Install Terraform'
             inputs:
               terraformVersion: '$(TF_VERSION)'
+          - task: TerraformTaskV4@4
+            displayName: Initialize Terraform
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              backendServiceArm: 'WorkloadServiceConnection'
+              backendAzureRmResourceGroupName: 'azurepipelinesrg'
+              backendAzureRmStorageAccountName: 'maumvmodulestorageacct'
+              backendAzureRmContainerName: 'maumvterraformstate'
+              backendAzureRmKey: 'terraform.tfstate'
+
+          - task: TerraformTaskV4@4
+            name: terraformPlan
+            displayName: Create Terraform Plan
+            inputs:
+              provider: 'azurerm'
+              command: 'plan'
+              commandOptions: '-out main.tfplan'
+              environmentServiceNameAzureRM: 'WorkloadServiceConnection'
 
           - script: |
               terraform init
