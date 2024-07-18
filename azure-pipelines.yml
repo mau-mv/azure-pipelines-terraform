@@ -35,7 +35,7 @@ stages:
           - task: AzureCLI@2
             displayName: 'Azure Login'
             inputs:
-              azureSubscription: 'AzurePipelineServiceConnection'
+              azureSubscription: 'WorkloadServiceConnection'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
