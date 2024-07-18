@@ -47,6 +47,7 @@ stages:
                 
                 # Export the token to be used in subsequent steps
                 export OIDC_TOKEN=$oidc_token
+                echo $OIDC_TOKEN
             displayName: 'Fetch OIDC Token'
 
           - script: |
